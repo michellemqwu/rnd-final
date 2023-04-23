@@ -11,19 +11,20 @@ import ketai.camera.*;
 
 Context context;
 SensorManager manager;
-Sensor sensor;
-LightListener listener;
+
+Sensor lightSensor;
+LightListener lightSensorListener;
+
+Sensor acceSensor;
+AccelerometerListener acceSensorListener;
+float ax, ay, az;
+float current_max;
+float acc_zero_threshold = 10.0;
+boolean startRecording = false;
+int stable_count = 0;
+
 float l;
 float prev_l;
-
-int progress;
-
-int rectX = 700;
-int rectY = 700; 
-int rectW = 300;
-int rectH = 200;
-
-boolean showButton = false;
 
 KetaiCamera cam;
 
@@ -32,9 +33,14 @@ void setup() {
   
   context = getActivity();
   manager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-  sensor = manager.getDefaultSensor(Sensor.TYPE_LIGHT);
-  listener = new LightListener();
-  manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_GAME);
+  
+  lightSensor = manager.getDefaultSensor(Sensor.TYPE_LIGHT);
+  lightSensorListener = new LightListener();
+  manager.registerListener(lightSensorListener, lightSensor, SensorManager.SENSOR_DELAY_GAME);
+  
+  acceSensor = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+  acceSensorListener = new AccelerometerListener();
+  manager.registerListener(acceSensorListener, acceSensor, SensorManager.SENSOR_DELAY_GAME);
   
   textFont(createFont("SansSerif", 40 * displayDensity));
  
@@ -48,35 +54,41 @@ void draw() {
   image(cam, width/2, height/2);
   cam.start();
   
+  //text("X: " + ax + "\nY: " + ay + "\nZ: " + az, 10, 10, width, height);
   text("L: " + l, 10, 10, width, height);
-  text(progress + "/10", 300, 300, width, height);
   
-  if (showButton) {
-   rect(rectX, rectY, rectW, rectH);
-   fill(255); 
+  if (stable_count >= 30) {
+    println("current max is: ", current_max);
+    startRecording = false;
+    current_max = 0.0;
   }
   
-  if (prev_l > 45.0 && l <= 45.0) {
-    progress++;
-    cam.enableFlash();
-    delay(100);
-    cam.disableFlash();
-    delay(100);
-    cam.enableFlash();
-    delay(100);
-    cam.disableFlash();
-    delay(100);
-    println(progress);
+  if (ax < acc_zero_threshold && ay < acc_zero_threshold && az < acc_zero_threshold) {
+    stable_count += 1;
   }
   
-  if (progress == 10) {
-    showButton = true;
+  if (ax >= acc_zero_threshold || ay >= acc_zero_threshold || az >= acc_zero_threshold) {
+    startRecording = true;
+    stable_count = 0;
+  }
+  
+  if (startRecording) {
+    if (ax > current_max) {
+      current_max = ax;
+    } else if (ay > current_max) {
+      current_max = ay;
+    } else if (az > current_max) {
+      current_max = az;
+    }
+  }
+  
+  if (prev_l > 100.0 && l <= 100.0) {
     cam.enableFlash();
-    delay(300);
+    delay(100);
     cam.disableFlash();
     delay(100);
     cam.enableFlash();
-    delay(300);
+    delay(100);
     cam.disableFlash();
     delay(100);
   }
@@ -93,17 +105,12 @@ class LightListener implements SensorEventListener {
   }
 }
 
-boolean overButton() {
-  if (mouseX >= rectX && mouseX <= rectX + rectW && mouseY >= rectY && mouseY <= rectY + rectH) {
-    return true;
-  } else {
-    return false;
+class AccelerometerListener implements SensorEventListener {
+  public void onSensorChanged(SensorEvent event) {
+    ax = event.values[0];
+    ay = event.values[1];
+    az = event.values[2];    
   }
-}
-
-void mousePressed() {
-  if (overButton()) {
-    showButton = false;
-    progress = 0;
+  public void onAccuracyChanged(Sensor sensor, int accuracy) {
   }
 }
