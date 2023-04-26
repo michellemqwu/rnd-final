@@ -1,9 +1,15 @@
 #include <Arduino_LSM6DS3.h>
+#include <FastLED.h>
+
+#define NUM_LEDS 5
+#define DATA_PIN 2
+
+CRGB leds[NUM_LEDS];
 
 int sameReading = 0;
 int threshold = 20;
 
-float zero_threshold = 10.5;
+float zero_threshold = 13.0;
 float current_max;
 
 bool startRecording = false;
@@ -13,6 +19,8 @@ void setup() {
   Serial.begin(9600);
   pinMode(7, OUTPUT);
 
+  FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);
+
   if (!IMU.begin()) {
     Serial.println("Failed to initialize IMU!");
     while (true)
@@ -21,7 +29,18 @@ void setup() {
 }
 
 void loop() {
-  //Serial.println(analogRead(7));
+
+  int photoCellReading = analogRead(7);
+
+  if (photoCellReading > 200) {
+    Serial.println(photoCellReading);
+    photoCellLEDEffect();
+    photoCellLEDEffect();
+    photoCellLEDEffect();
+    photoCellLEDEffect();
+    photoCellLEDEffect();
+
+  }
 
   float x, y, z;
   int orientation = -1;
@@ -37,6 +56,13 @@ void loop() {
       if (current_max != 0.00) {
         Serial.print("current max is: ");
         Serial.println(current_max);
+        if (current_max <= 15.00) {
+          weakestLEDEffect();
+        } else if (current_max <= 30.00) {
+          mediumLEDEffect();
+        } else {
+          strongLEDEffect();
+        }
       }
       
       startRecording = false;
@@ -62,11 +88,39 @@ void loop() {
       }
     }
 
-    // Serial.print("x: ");
-    // Serial.print(x * 10);
-    // Serial.print("y: ");
-    // Serial.print(y * 10);
-    // Serial.print("z: ");
-    // Serial.println(z * 10);
+  }
+}
+
+void photoCellLEDEffect() {
+  for (int i = 0; i <= NUM_LEDS; i++) {
+    leds[i] = CRGB(0, 0, 0); 
+    FastLED.show();
+  }
+  delay(100);
+  for (int i = 0; i <= NUM_LEDS; i++) {
+    leds[i] = CRGB(0, 255, 0); 
+    FastLED.show();
+  }
+  delay(100);
+}
+
+void weakestLEDEffect() {
+  for (int i = 0; i <= NUM_LEDS; i++) {
+    leds[i] = CRGB(60, 100, 0); 
+    FastLED.show();
+  }
+}
+
+void mediumLEDEffect() {
+  for (int i = 0; i <= NUM_LEDS; i++) {
+    leds[i] = CRGB(30, 255, 0); 
+    FastLED.show();
+  }
+}
+
+void strongLEDEffect() {
+  for (int i = 0; i <= NUM_LEDS; i++) {
+    leds[i] = CRGB(0, 255, 0); 
+    FastLED.show();
   }
 }
