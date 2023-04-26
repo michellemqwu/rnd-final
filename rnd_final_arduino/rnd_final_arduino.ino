@@ -1,8 +1,7 @@
 #include <Arduino_LSM6DS3.h>
 #include <FastLED.h>
 
-#define NUM_LEDS 5
-#define DATA_PIN 2
+#define NUM_LEDS 100
 
 CRGB leds[NUM_LEDS];
 
@@ -17,9 +16,10 @@ int stable_count = 0;
 
 void setup() {
   Serial.begin(9600);
+
   pinMode(7, OUTPUT);
 
-  FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2812, 2, RGB>(leds, NUM_LEDS);
 
   if (!IMU.begin()) {
     Serial.println("Failed to initialize IMU!");
@@ -32,14 +32,13 @@ void loop() {
 
   int photoCellReading = analogRead(7);
 
-  if (photoCellReading > 200) {
+  if (photoCellReading > 500) {
     Serial.println(photoCellReading);
     photoCellLEDEffect();
     photoCellLEDEffect();
     photoCellLEDEffect();
     photoCellLEDEffect();
     photoCellLEDEffect();
-
   }
 
   float x, y, z;
@@ -64,7 +63,7 @@ void loop() {
           strongLEDEffect();
         }
       }
-      
+
       startRecording = false;
       current_max = 0.0;
     }
@@ -87,18 +86,18 @@ void loop() {
         current_max = abs(z);
       }
     }
-
   }
 }
 
 void photoCellLEDEffect() {
   for (int i = 0; i <= NUM_LEDS; i++) {
-    leds[i] = CRGB(0, 0, 0); 
+    leds[i] = CRGB(0, 0, 0);
     FastLED.show();
   }
+
   delay(100);
   for (int i = 0; i <= NUM_LEDS; i++) {
-    leds[i] = CRGB(0, 255, 0); 
+    leds[i] = CRGB(0, 255, 0);
     FastLED.show();
   }
   delay(100);
@@ -106,21 +105,21 @@ void photoCellLEDEffect() {
 
 void weakestLEDEffect() {
   for (int i = 0; i <= NUM_LEDS; i++) {
-    leds[i] = CRGB(60, 100, 0); 
+    leds[i] = CRGB(60, 100, 0);
     FastLED.show();
   }
 }
 
 void mediumLEDEffect() {
   for (int i = 0; i <= NUM_LEDS; i++) {
-    leds[i] = CRGB(30, 255, 0); 
+    leds[i] = CRGB(100, 255, 0);
     FastLED.show();
   }
 }
 
 void strongLEDEffect() {
   for (int i = 0; i <= NUM_LEDS; i++) {
-    leds[i] = CRGB(0, 255, 0); 
+    leds[i] = CRGB(0, 255, 0);
     FastLED.show();
   }
 }
