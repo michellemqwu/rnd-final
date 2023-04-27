@@ -32,7 +32,7 @@ void loop() {
 
   int photoCellReading = analogRead(7);
 
-  if (photoCellReading > 500) {
+  if (photoCellReading > 800) {
     Serial.println(photoCellReading);
     photoCellLEDEffect();
     photoCellLEDEffect();
@@ -112,7 +112,7 @@ void weakestLEDEffect() {
 
 void mediumLEDEffect() {
   for (int i = 0; i <= NUM_LEDS; i++) {
-    leds[i] = CRGB(100, 255, 0);
+    leds[i] = CRGB(244, 164, 96);
     FastLED.show();
   }
 }
