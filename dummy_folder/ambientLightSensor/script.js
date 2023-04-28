@@ -16,7 +16,7 @@
   });
 
   sensor.addEventListener('error', err => {
-    document.getElementById('error').innerText = err;
+    document.getElementById('error').innerText = err.name;
   });
 
   sensor.start();
