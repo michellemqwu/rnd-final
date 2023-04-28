@@ -1,10 +1,24 @@
-if ("AmbientLightSensor" in window) {
+(async function () {
+  const { state } = await navigator.permissions.query({
+    name: 'ambient-light-sensor',
+  });
+  document.getElementById('permission').innerText = `Permission: ${state}`;
+
+  if (state !== 'granted') {
+    console.warn("You haven't granted permission to use the light sensor");
+    return;
+  }
+
   const sensor = new AmbientLightSensor();
-  sensor.addEventListener("reading", (event) => {
-    console.log("Current light level:", sensor.illuminance);
+
+  sensor.addEventListener('reading', () => {
+    document.getElementById('reading').innerText = sensor.illuminance;
   });
-  sensor.addEventListener("error", (event) => {
-    console.log(event.error.name, event.error.message);
+
+  sensor.addEventListener('error', err => {
+    document.getElementById('error').innerText = err.message;
+
   });
+
   sensor.start();
-}
+})();
